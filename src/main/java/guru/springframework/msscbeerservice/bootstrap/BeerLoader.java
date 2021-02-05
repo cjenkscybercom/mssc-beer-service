@@ -25,7 +25,7 @@ public class BeerLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        loadBeerObjects();
+//        loadBeerObjects();
     }
 
     private void loadBeerObjects() {
