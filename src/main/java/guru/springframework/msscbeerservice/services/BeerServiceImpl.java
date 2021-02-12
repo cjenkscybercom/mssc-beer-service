@@ -8,6 +8,7 @@ import guru.springframework.msscbeerservice.web.model.BeerDto;
 import guru.springframework.msscbeerservice.web.model.BeerPagedList;
 import guru.springframework.msscbeerservice.web.model.BeerStyleEnum;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 /**
  * Created by jt on 2019-06-06.
  */
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class BeerServiceImpl implements BeerService {
@@ -26,7 +28,7 @@ public class BeerServiceImpl implements BeerService {
     private final BeerMapper beerMapper;
 
     @Override
-    public BeerPagedList listBeers(String beerName, BeerStyleEnum beerStyle, PageRequest pageRequest) {
+    public BeerPagedList listBeers(String beerName, BeerStyleEnum beerStyle, PageRequest pageRequest, Boolean showInventoryOnHand) {
 
         Page<Beer> beerPage;
 
@@ -41,21 +43,39 @@ public class BeerServiceImpl implements BeerService {
             beerPage = beerRepository.findAll(pageRequest);
         }
 
-        return new BeerPagedList(
-                beerPage.getContent().stream()
-                    .map(beerMapper::beerToBeerDto)
-                    .collect(Collectors.toList()),
-                beerPage.getPageable(),
-                beerPage.getTotalElements()
-        );
+        if(showInventoryOnHand) {
+            return new BeerPagedList(
+                    beerPage.getContent().stream()
+                            .map(beerMapper::beerToBeerDtoWithInventoryOnHand)
+                            .collect(Collectors.toList()),
+                    beerPage.getPageable(),
+                    beerPage.getTotalElements()
+            );
+        } else {
+            return new BeerPagedList(
+                    beerPage.getContent().stream()
+                            .map(beerMapper::beerToBeerDto)
+                            .collect(Collectors.toList()),
+                    beerPage.getPageable(),
+                    beerPage.getTotalElements()
+            );
+        }
 
     }
 
     @Override
-    public BeerDto getById(UUID beerId) {
-        return beerMapper.beerToBeerDto(
-                beerRepository.findById(beerId).orElseThrow(NotFoundException::new)
-        );
+    public BeerDto getById(UUID beerId, Boolean showInventoryOnHand) {
+
+        log.debug("showInventoryOnHand: " + showInventoryOnHand);
+        Beer result = beerRepository.findById(beerId).orElseThrow(NotFoundException::new);
+
+        if(showInventoryOnHand) {
+            log.debug("Showing inventory on hand for beer " + beerId);
+            return beerMapper.beerToBeerDtoWithInventoryOnHand(result);
+        } else {
+            return beerMapper.beerToBeerDto(result);
+        }
+
     }
 
     @Override
