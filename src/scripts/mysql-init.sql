@@ -1,3 +1,6 @@
+-- This script creates a database for the beer service, with
+-- a dedicated service account. Run this on new instances to drop/create the DB.
+-- (this isn't automatically picked-up/used by Spring!)
 DROP DATABASE IF EXISTS beerservice;
 DROP USER IF EXISTS `beer_service`@`%`;
 CREATE DATABASE IF NOT EXISTS beerservice CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
